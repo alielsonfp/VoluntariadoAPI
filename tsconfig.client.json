@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ES6", // Usa módulos ES6 para o front-end
+    "outDir": "./dist/client" // Pasta de saída para o front-end
+  }
+}

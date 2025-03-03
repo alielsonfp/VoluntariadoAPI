@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json", // Herda as configurações do tsconfig.json base
+  "compilerOptions": {
+    "module": "commonjs", // Usa CommonJS para o back-end (Node.js)
+    "outDir": "./dist/server", // Pasta de saída para os arquivos compilados do back-end
+    "rootDir": "./backend", // Define a pasta raiz para o back-end
+    "target": "ES6", // Define a versão do JavaScript gerada
+    "strict": true, // Habilita verificações rigorosas de tipo
+    "esModuleInterop": true, // Permite a importação de módulos CommonJS
+    "skipLibCheck": true, // Ignora a verificação de tipos em bibliotecas
+    "forceConsistentCasingInFileNames": true // Força consistência no uso de maiúsculas/minúsculas
+  },
+  "include": [
+    "backend/**/*.ts"
+  ], // Inclui todos os arquivos TypeScript na pasta backend
+  "exclude": [
+    "node_modules",
+    "frontend"
+  ] // Exclui a pasta node_modules e o front-end
+}
