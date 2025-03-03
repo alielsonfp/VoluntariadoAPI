@@ -9,8 +9,8 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    const decoded = jwt.verify(token, 'secretKey') as { email: string; role: string };
-    req.user = decoded; // Agora isso funciona sem erros de tipo
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { email: string; role: string };
+    req.user = decoded;
     next();
   } catch (error) {
     res.status(400).json({ message: 'Token inválido.' });

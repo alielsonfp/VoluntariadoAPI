@@ -20,8 +20,8 @@ const authController = {
 
       res.status(201).json({ message: 'Usuário registrado com sucesso' });
     } catch (error) {
-      console.error('Erro ao registrar usuário:', error); // Log do erro no console
-      res.status(500).json({ message: 'Erro interno do servidor' }); // Resposta ao cliente
+      console.error('Erro ao registrar usuário:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 
@@ -37,12 +37,12 @@ const authController = {
       }
 
       // Gera o token JWT
-      const token = jwt.sign({ email: user.email, role: user.role }, 'secretKey', { expiresIn: '1h' });
+      const token = jwt.sign({ email: user.email, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
 
       res.json({ token });
     } catch (error) {
-      console.error('Erro ao fazer login:', error); // Log do erro no console
-      res.status(500).json({ message: 'Erro interno do servidor' }); // Resposta ao cliente
+      console.error('Erro ao fazer login:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
 };
