@@ -4,12 +4,13 @@ import { Request, Response } from 'express';
 import Activity from '../models/Activity';
 
 // Criar uma nova atividade
-export const createActivity = async (req: Request, res: Response) => {
+export const createActivity = async (req: Request, res: Response): Promise<void> => {
   const { title, description, date, location, maxParticipants } = req.body;
 
   // Validação básica dos dados
   if (!title || !description || !date || !location || !maxParticipants) {
-    return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
+    res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
+    return; // Adicione return para evitar execução adicional
   }
 
   try {
@@ -38,7 +39,7 @@ export const createActivity = async (req: Request, res: Response) => {
 };
 
 // Listar todas as atividades
-export const listActivities = async (req: Request, res: Response) => {
+export const listActivities = async (req: Request, res: Response): Promise<void> => {
   try {
     // Buscar todas as atividades no banco de dados
     const activities = await Activity.listAll();
@@ -52,7 +53,7 @@ export const listActivities = async (req: Request, res: Response) => {
 };
 
 // Obter detalhes de uma atividade específica
-export const getActivityById = async (req: Request, res: Response) => {
+export const getActivityById = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -60,7 +61,8 @@ export const getActivityById = async (req: Request, res: Response) => {
     const activity = await Activity.findById(id);
 
     if (!activity) {
-      return res.status(404).json({ message: 'Atividade não encontrada.' });
+      res.status(404).json({ message: 'Atividade não encontrada.' });
+      return;
     }
 
     // Retornar os detalhes da atividade
@@ -72,7 +74,7 @@ export const getActivityById = async (req: Request, res: Response) => {
 };
 
 // Atualizar uma atividade existente
-export const updateActivity = async (req: Request, res: Response) => {
+export const updateActivity = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { title, description, date, location, maxParticipants } = req.body;
 
@@ -81,7 +83,8 @@ export const updateActivity = async (req: Request, res: Response) => {
     const activity = await Activity.findById(id);
 
     if (!activity) {
-      return res.status(404).json({ message: 'Atividade não encontrada.' });
+      res.status(404).json({ message: 'Atividade não encontrada.' });
+      return;
     }
 
     // Atualizar os campos da atividade
@@ -103,7 +106,7 @@ export const updateActivity = async (req: Request, res: Response) => {
 };
 
 // Deletar uma atividade
-export const deleteActivity = async (req: Request, res: Response) => {
+export const deleteActivity = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -111,7 +114,8 @@ export const deleteActivity = async (req: Request, res: Response) => {
     const activity = await Activity.findById(id);
 
     if (!activity) {
-      return res.status(404).json({ message: 'Atividade não encontrada.' });
+      res.status(404).json({ message: 'Atividade não encontrada.' });
+      return;
     }
 
     // Deletar a atividade
@@ -126,7 +130,7 @@ export const deleteActivity = async (req: Request, res: Response) => {
 };
 
 // Inscrever um usuário em uma atividade
-export const joinActivity = async (req: Request, res: Response) => {
+export const joinActivity = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { userId } = req.body; // Supondo que o ID do usuário seja passado no corpo da requisição
 
@@ -135,17 +139,20 @@ export const joinActivity = async (req: Request, res: Response) => {
     const activity = await Activity.findById(id);
 
     if (!activity) {
-      return res.status(404).json({ message: 'Atividade não encontrada.' });
+      res.status(404).json({ message: 'Atividade não encontrada.' });
+      return;
     }
 
     // Verificar se o usuário já está inscrito
     if (activity.participants.includes(userId)) {
-      return res.status(400).json({ message: 'Usuário já está inscrito nesta atividade.' });
+      res.status(400).json({ message: 'Usuário já está inscrito nesta atividade.' });
+      return;
     }
 
     // Verificar se há vagas disponíveis
     if (activity.participants.length >= activity.maxParticipants) {
-      return res.status(400).json({ message: 'Não há vagas disponíveis.' });
+      res.status(400).json({ message: 'Não há vagas disponíveis.' });
+      return;
     }
 
     // Adicionar o usuário à lista de participantes
@@ -163,7 +170,7 @@ export const joinActivity = async (req: Request, res: Response) => {
 };
 
 // Listar participantes de uma atividade (apenas admin)
-export const listActivityParticipants = async (req: Request, res: Response) => {
+export const listActivityParticipants = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
   try {
@@ -171,7 +178,8 @@ export const listActivityParticipants = async (req: Request, res: Response) => {
     const activity = await Activity.findById(id);
 
     if (!activity) {
-      return res.status(404).json({ message: 'Atividade não encontrada.' });
+      res.status(404).json({ message: 'Atividade não encontrada.' });
+      return;
     }
 
     // Retornar a lista de participantes

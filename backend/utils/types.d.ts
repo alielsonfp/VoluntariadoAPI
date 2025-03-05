@@ -5,3 +5,4 @@ declare module 'express' {
     user?: { email: string; role: string };
   }
 }
+
