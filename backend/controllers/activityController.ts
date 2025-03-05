@@ -161,3 +161,23 @@ export const joinActivity = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Erro ao inscrever usuário na atividade.' });
   }
 };
+
+// Listar participantes de uma atividade (apenas admin)
+export const listActivityParticipants = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    // Buscar a atividade pelo ID
+    const activity = await Activity.findById(id);
+
+    if (!activity) {
+      return res.status(404).json({ message: 'Atividade não encontrada.' });
+    }
+
+    // Retornar a lista de participantes
+    res.status(200).json({ participants: activity.participants });
+  } catch (error) {
+    console.error('Erro ao listar participantes:', error);
+    res.status(500).json({ message: 'Erro ao listar participantes.' });
+  }
+};
