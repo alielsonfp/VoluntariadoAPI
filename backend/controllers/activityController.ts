@@ -132,7 +132,7 @@ export const deleteActivity = async (req: Request, res: Response): Promise<void>
 // Inscrever um usuário em uma atividade
 export const joinActivity = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { userId } = req.body; // Supondo que o ID do usuário seja passado no corpo da requisição
+  const { userEmail } = req.body; // Substitua userId por userEmail
 
   try {
     // Buscar a atividade pelo ID
@@ -144,7 +144,7 @@ export const joinActivity = async (req: Request, res: Response): Promise<void> =
     }
 
     // Verificar se o usuário já está inscrito
-    if (activity.participants.includes(userId)) {
+    if (activity.participants.includes(userEmail)) { // Use userEmail aqui
       res.status(400).json({ message: 'Usuário já está inscrito nesta atividade.' });
       return;
     }
@@ -156,7 +156,7 @@ export const joinActivity = async (req: Request, res: Response): Promise<void> =
     }
 
     // Adicionar o usuário à lista de participantes
-    activity.participants.push(userId);
+    activity.participants.push(userEmail); // Use userEmail aqui
 
     // Salvar as alterações no banco de dados
     await Activity.update(activity);
@@ -168,7 +168,6 @@ export const joinActivity = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Erro ao inscrever usuário na atividade.' });
   }
 };
-
 // Listar participantes de uma atividade (apenas admin)
 export const listActivityParticipants = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
