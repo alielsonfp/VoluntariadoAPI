@@ -15,7 +15,7 @@
       <ul>
         <li><a href="#minhas-atividades">Minhas Atividades</a></li>
         <li><a href="#todas-atividades">Todas as Atividades</a></li>
-        <li><a href="#logout">Sair</a></li>
+        <li><a href="#logout" id="logout-button">Sair</a></li>
       </ul>
     </nav>
   </header>
@@ -68,7 +68,8 @@
 
     // Adiciona o evento de logout ao botão
     const logoutButton = document.getElementById('logout-button');
-    logoutButton.addEventListener('click', () => {
+    logoutButton.addEventListener('click', (event) => {
+      event.preventDefault(); // Impede o comportamento padrão do link
       handleLogout();
     });
   </script>

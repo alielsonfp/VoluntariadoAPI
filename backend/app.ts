@@ -44,6 +44,17 @@ app.get('/register', (req, res) => {
   res.sendFile(path.join(frontendPath, 'pages/register.html'));
 });
 
+app.post('/api/auth/logout', (req, res) => {
+  // Remove o cookie 'token'
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+  });
+
+  res.status(200).json({ message: 'Logout realizado com sucesso' });
+});
+
 app.get('/api', (req, res) => {
   res.send('API de Atividades de Voluntariado');
 });
