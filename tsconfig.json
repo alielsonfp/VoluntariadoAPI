@@ -7,7 +7,14 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": [
+      "./node_modules/@types"
+    ], // Define onde procurar por tipos
+    "types": [
+      "node",
+      "jsonwebtoken"
+    ] // Inclui os tipos globais
   },
   "include": [
     "**/*.ts",

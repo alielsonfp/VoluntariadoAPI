@@ -41,7 +41,16 @@ const authController = {
       // Gera o token JWT
       const token = jwt.sign({ email: user.email, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '1h' });
 
-      res.json({ token });
+      // Envia o token como um cookie seguro
+      res.cookie('token', token, {
+        httpOnly: true, // Impede acesso via JavaScript
+        secure: true, // Só envia o cookie em conexões HTTPS
+        sameSite: 'strict', // Protege contra ataques CSRF
+        maxAge: 3600000, // Tempo de expiração do cookie (1 hora)
+      });
+
+      // Retorna uma resposta de sucesso
+      res.status(200).json({ message: 'Login realizado com sucesso' });
     } catch (error) {
       console.error('Erro ao fazer login:', error);
       res.status(500).json({ message: 'Erro interno do servidor' });

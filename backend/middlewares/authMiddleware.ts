@@ -4,24 +4,29 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  // Obtém o token do cookie ou do cabeçalho Authorization
+  const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
+
+  console.log('🔍 Token recebido:', token); // Log para depuração
 
   if (!token) {
     res.status(401).json({ message: 'Acesso negado. Token não fornecido.' });
-    return; // Adicione return para evitar execução adicional
+    return; // Encerra a execução do middleware
   }
 
   try {
-    // Verifica o token e decodifica os dados
+    // Verifica e decodifica o token
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { email: string; role: string };
-
-    // Adiciona os dados do usuário ao objeto `req`
     req.user = decoded;
-
-    // Passa para o próximo middleware ou rota
-    next();
+    next(); // Passa para o próximo middleware ou rota
   } catch (error) {
-    res.status(400).json({ message: 'Token inválido.' });
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(401).json({ message: 'Token expirado.' });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      res.status(400).json({ message: 'Token inválido.' });
+    } else {
+      res.status(500).json({ message: 'Erro na autenticação.' });
+    }
   }
 };
 

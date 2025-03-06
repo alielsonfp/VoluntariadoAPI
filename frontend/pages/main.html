@@ -63,6 +63,15 @@
   <footer>
     <p>&copy; 2023 Atividades de Voluntariado</p>
   </footer>
+  <script type="module">
+    import { handleLogout } from './js/auth.js';
+
+    // Adiciona o evento de logout ao botão
+    const logoutButton = document.getElementById('logout-button');
+    logoutButton.addEventListener('click', () => {
+      handleLogout();
+    });
+  </script>
 </body>
 
 </html>

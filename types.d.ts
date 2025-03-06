@@ -1,12 +1,12 @@
-// types.d.ts
+// src/types/express/index.d.ts ou @types/express/index.d.ts
 
 import { Request } from 'express';
 
-declare module 'express' {
-  interface Request {
-    user?: {
-      email: string;
-      role: string;
-    };
+// Estendendo a interface Request do Express para incluir a propriedade 'user'
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { email: string; role: string }; // Definindo o tipo do usuário
+    }
   }
 }
