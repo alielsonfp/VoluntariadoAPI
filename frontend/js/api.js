@@ -29,10 +29,10 @@ async function fetchAPI(endpoint, method = 'GET', body = null, token = null) {
 
 // Registro
 export async function register(email, password, name) {
-  return fetchAPI('/auth/register', 'POST', { email, password, name }); // Envia o nome
+  return fetchAPI('/api/auth/register', 'POST', { email, password, name }); // Envia o nome
 }
 
 // Login
 export async function login(email, password) {
-  return fetchAPI('/auth/login', 'POST', { email, password });
+  return fetchAPI('/api/auth/login', 'POST', { email, password });
 }
