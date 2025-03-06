@@ -1,25 +1,18 @@
-// adminMiddleware.ts
-
 import { Request, Response, NextFunction } from 'express';
-import User from '../models/User';
 
 export const adminMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Supondo que o e-mail do usuário esteja no objeto `req.user` após a autenticação
-    const userEmail = (req as any).user.email; // Ajuste conforme sua implementação do JWT
-
-    // Buscar o usuário no banco de dados pelo e-mail
-    const user = await User.findByEmail(userEmail);
-
-    if (!user) {
-      res.status(404).json({ message: 'Usuário não encontrado.' });
-      return; // Adicione return para evitar execução adicional
+    // Verifica se o usuário está autenticado e se o objeto `req.user` existe
+    if (!req.user) {
+      return res.status(401).json({ message: 'Usuário não autenticado.' });
     }
 
-    // Verificar se o usuário é um administrador
-    if (user.role !== 'admin') {
-      res.status(403).json({ message: 'Acesso negado. Somente administradores podem realizar esta ação.' });
-      return; // Adicione return para evitar execução adicional
+    // Extrai a role do usuário do objeto `req.user`
+    const userRole = (req as any).user.role;
+
+    // Verifica se o usuário é um administrador
+    if (userRole !== 'admin') {
+      return res.status(403).json({ message: 'Acesso negado. Somente administradores podem realizar esta ação.' });
     }
 
     // Se o usuário for um administrador, permitir o acesso
