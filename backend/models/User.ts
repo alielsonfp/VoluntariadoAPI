@@ -18,6 +18,7 @@ const putAsync = promisify(db.put.bind(db));
 const getAsync = promisify(db.get.bind(db));
 
 interface UserData {
+  name: string; // Novo campo: nome do usuário
   email: string;
   password: string;
   role: 'user' | 'admin';
@@ -25,12 +26,14 @@ interface UserData {
 }
 
 class User {
+  name: string; // Novo campo: nome do usuário
   email: string;
   password: string;
   role: 'user' | 'admin';
   activities: string[];
 
-  constructor(email: string, password: string, role: 'user' | 'admin' = 'user') {
+  constructor(name: string, email: string, password: string, role: 'user' | 'admin' = 'user') {
+    this.name = name; // Inicializa o nome do usuário
     this.email = email;
     this.password = password;
     this.role = role;
@@ -40,6 +43,7 @@ class User {
   async save(): Promise<void> {
     try {
       const userData: UserData = {
+        name: this.name, // Inclui o nome no objeto de dados do usuário
         email: this.email,
         password: this.password,
         role: this.role,

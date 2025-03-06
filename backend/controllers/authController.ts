@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 const authController = {
   async register(req: Request, res: Response): Promise<void> {
     try {
-      const { email, password } = req.body;
+      const { name, email, password } = req.body; // Recebe o nome do usuário
 
       // Verifica se o usuário já existe
       const existingUser = await User.findByEmail(email);
@@ -16,8 +16,8 @@ const authController = {
 
       // Define a role como "admin" se o e-mail for "admin@email.com"
       const role = email === 'admin@email.com' ? 'admin' : 'user';
-      // Cria um novo usuário
-      const newUser = new User(email, password, role);
+      // Cria um novo usuário com o nome
+      const newUser = new User(name, email, password, role);
       await newUser.save();
 
       res.status(201).json({ message: 'Usuário registrado com sucesso' });
