@@ -1,4 +1,4 @@
-// authMiddleware.ts
+/// <reference path="../../types.d.ts" /> // Caminho relativo para o types.d.ts
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
@@ -12,9 +12,14 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
+    // Verifica o token e decodifica os dados
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { email: string; role: string };
+
+    // Adiciona os dados do usuário ao objeto `req`
     req.user = decoded;
-    next(); // Passa para o próximo middleware ou rota
+
+    // Passa para o próximo middleware ou rota
+    next();
   } catch (error) {
     res.status(400).json({ message: 'Token inválido.' });
   }

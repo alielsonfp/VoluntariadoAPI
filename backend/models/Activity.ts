@@ -116,22 +116,43 @@ class Activity {
   }
 
   static async listAll(): Promise<ActivityData[]> {
-    return new Promise((resolve, reject) => {
-      const activities: ActivityData[] = [];
-      db.createReadStream()
-        .on('data', (data: { key: Buffer; value: Buffer }) => {
-          activities.push(JSON.parse(data.value.toString()));
-        })
-        .on('error', (error: Error) => {
-          console.error('Erro ao listar atividades no RocksDB:', error.message);
-          reject(error);
-        })
-        .on('end', () => {
-          resolve(activities);
-        });
-    });
+    try {
+      const activities = await createReadStreamAsync();
+      return activities;
+    } catch (error) {
+      console.error('Erro ao listar atividades:', error);
+      throw error;
+    }
   }
 }
+
+// Função para iterar sobre todos os dados no RocksDB
+const createReadStreamAsync = async (): Promise<ActivityData[]> => {
+  return new Promise((resolve, reject) => {
+    const activities: ActivityData[] = [];
+    const stream = db.iterator({ keys: true, values: true });
+
+    function next() {
+      stream.next((err, key, value) => {
+        if (err) {
+          return reject(err);
+        }
+        if (!key) {
+          // Fim dos dados
+          return resolve(activities);
+        }
+        try {
+          activities.push(JSON.parse(value.toString()));
+          next(); // Continua iterando
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+
+    next(); // Inicia a iteração
+  });
+};
 
 // Fechar o banco de dados ao encerrar o servidor
 process.on("SIGINT", () => {

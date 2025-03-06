@@ -14,8 +14,10 @@ const authController = {
         return;
       }
 
+      // Define a role como "admin" se o e-mail for "admin@email.com"
+      const role = email === 'admin@email.com' ? 'admin' : 'user';
       // Cria um novo usuário
-      const newUser = new User(email, password);
+      const newUser = new User(email, password, role);
       await newUser.save();
 
       res.status(201).json({ message: 'Usuário registrado com sucesso' });

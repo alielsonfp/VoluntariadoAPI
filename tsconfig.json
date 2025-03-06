@@ -10,8 +10,9 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "**/*.ts"
-  ],
+    "**/*.ts",
+    "**/*.d.ts"
+  ], // Inclui arquivos .ts e .d.ts
   "exclude": [
     "node_modules"
   ]
