@@ -44,7 +44,7 @@ const authController = {
       // Envia o token como um cookie seguro
       res.cookie('token', token, {
         httpOnly: true, // Impede acesso via JavaScript
-        secure: true, // Só envia o cookie em conexões HTTPS
+        secure: false, // Só envia o cookie em conexões HTTPS
         sameSite: 'strict', // Protege contra ataques CSRF
         maxAge: 3600000, // Tempo de expiração do cookie (1 hora)
       });
@@ -56,6 +56,26 @@ const authController = {
       res.status(500).json({ message: 'Erro interno do servidor' });
     }
   },
+  // Endpoint para obter informações do usuário autenticado
+  async getCurrentUser(req: Request, res: Response): Promise<void> {
+    try {
+      // O middleware authMiddleware já adicionou o payload do token ao objeto `req`
+      const userEmail = req.user?.email; // Extrai o email do payload do token
+      if (!userEmail) {
+        res.status(401).json({ message: 'Usuário não autenticado' });
+        return;
+      }
+      res.status(200).json({ email: userEmail });
+    } catch (error) {
+      console.error('Erro ao obter informações do usuário:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+  },
 };
+
+
+
+
+
 
 export default authController;

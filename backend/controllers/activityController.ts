@@ -168,6 +168,7 @@ export const joinActivity = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Erro ao inscrever usuário na atividade.' });
   }
 };
+
 // Listar participantes de uma atividade (apenas admin)
 export const listActivityParticipants = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
