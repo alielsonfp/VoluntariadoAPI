@@ -11,7 +11,10 @@
   },
   "include": [
     "**/*.ts",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    "frontend/js/main.js",
+    "frontend/js/api.js",
+    "frontend/js/auth.js"
   ], // Inclui arquivos .ts e .d.ts
   "exclude": [
     "node_modules"

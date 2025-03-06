@@ -11,7 +11,7 @@
 <body>
   <div class="register-container">
     <h1>Registro</h1>
-    <form>
+    <form id="register-form">
       <div class="input-group">
         <label for="nome">Nome</label>
         <div class="input-icon">
@@ -46,6 +46,29 @@
       Já possui conta? <a href="login.html">Faça login</a>
     </p>
   </div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { handleRegister } from './js/auth.js';
+
+    const registerForm = document.getElementById('register-form');
+    registerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const name = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('senha').value;
+      const confirmPassword = document.getElementById('confirmar-senha').value;
+
+      // Validação básica de senha
+      if (password !== confirmPassword) {
+        alert('As senhas não coincidem!');
+        return;
+      }
+
+      await handleRegister(email, password); // Envia o e-mail e senha para registro
+    });
+  </script>
 </body>
 
 </html>
