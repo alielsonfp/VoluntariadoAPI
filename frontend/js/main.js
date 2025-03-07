@@ -62,23 +62,23 @@ const displayActivities = async (activities) => {
     const isUserInscrito = activity.participants.includes(userEmail); // Verifica se o usuário está inscrito
 
     return `
-    <div class="atividade">
-      <h3>${activity.title}</h3>
-      <p>${activity.description}</p>
-      <p>Data: ${activity.date}</p>
-      <p>Local: ${activity.location}</p>
-      <p>Participantes: <span class="participantes">${activity.participants.length}/${activity.maxParticipants}</span></p>
-      <button class="${isUserInscrito ? 'desinscrever' : 'inscrever'}" 
-              data-activity-id="${activity.id}" 
-              ${activity.participants.length >= activity.maxParticipants && !isUserInscrito ? 'disabled' : ''}>
-        ${isUserInscrito ? 'Desinscrever-se' : 'Inscrever-se'}
-      </button>
-      <div class="atividade-actions">
-        <button class="editar">Editar</button>
-        <button class="excluir">Excluir</button>
+      <div class="atividade">
+        <h3>${activity.title}</h3>
+        <p>${activity.description}</p>
+        <p>Data: ${activity.date}</p>
+        <p>Local: ${activity.location}</p>
+        <p>Participantes: <span class="participantes">${activity.participants.length}/${activity.maxParticipants}</span></p>
+        <button class="${isUserInscrito ? 'desinscrever' : 'inscrever'}" 
+                data-activity-id="${activity.id}" 
+                ${activity.participants.length >= activity.maxParticipants && !isUserInscrito ? 'disabled' : ''}>
+          ${isUserInscrito ? 'Desinscrever-se' : 'Inscrever-se'}
+        </button>
+        <div class="atividade-actions">
+          <button class="editar" data-activity-id="${activity.id}">Editar</button>
+          <button class="excluir" data-activity-id="${activity.id}">Excluir</button>
+        </div>
       </div>
-    </div>
-  `;
+    `;
   }).join(''); // Junta todas as strings em uma única string HTML
 
   // Adiciona as atividades ao HTML
@@ -102,19 +102,21 @@ const displayActivities = async (activities) => {
     });
   });
 
-  // Adiciona os event listeners aos botões de Editar e Excluir
+  // Adiciona os event listeners aos botões de edição
   const editarButtons = todasAtividadesSection.querySelectorAll('button.editar');
-  const excluirButtons = todasAtividadesSection.querySelectorAll('button.excluir');
-
-  editarButtons.forEach((button, index) => {
+  editarButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      alert('Editar atividade: ' + activities[index].id); // Placeholder para a funcionalidade de editar
+      const activityId = button.getAttribute('data-activity-id'); // Recupera o ID da atividade
+      alert('Editar atividade: ' + activityId); // Placeholder para a funcionalidade de editar
     });
   });
 
-  excluirButtons.forEach((button, index) => {
+  // Adiciona os event listeners aos botões de exclusão
+  const excluirButtons = todasAtividadesSection.querySelectorAll('button.excluir');
+  excluirButtons.forEach((button) => {
     button.addEventListener('click', () => {
-      alert('Excluir atividade: ' + activities[index].id); // Placeholder para a funcionalidade de excluir
+      const activityId = button.getAttribute('data-activity-id'); // Recupera o ID da atividade
+      handleDelete(activityId); // Chama a função de exclusão
     });
   });
 };
@@ -148,6 +150,7 @@ const handleSubscribe = async (activityId) => {
   }
 };
 
+// Função para lidar com a desinscrição de uma atividade
 const handleLeave = async (activityId) => {
   try {
     const userEmail = await getCurrentUserEmail();
@@ -175,6 +178,31 @@ const handleLeave = async (activityId) => {
     alert('Erro ao se desinscrever da atividade. Tente novamente mais tarde.');
   }
 };
+
+// Função para lidar com a exclusão de uma atividade
+const handleDelete = async (activityId) => {
+  try {
+    console.log(`Tentando excluir a atividade ID: ${activityId}`); // Log de depuração
+
+    const response = await fetch(`/api/activities/${activityId}`, {
+      method: 'DELETE',
+      credentials: 'include', // Inclui cookies na requisição
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erro na resposta:', errorText);
+      throw new Error(`Erro ao excluir atividade: ${response.status} - ${errorText}`);
+    }
+
+    alert('Atividade excluída com sucesso!');
+    loadActivities(); // Recarrega as atividades após a exclusão
+  } catch (error) {
+    console.error('Erro ao excluir atividade:', error);
+    alert('Erro ao excluir atividade. Tente novamente mais tarde.');
+  }
+};
+
 // Função para abrir o modal
 const openCreateActivityModal = () => {
   const modal = document.getElementById('createActivityModal');
