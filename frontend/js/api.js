@@ -63,3 +63,8 @@ export const createActivity = async (activityData) => {
 export const deleteActivity = async (activityId) => {
   return fetchAPI(`/api/activities/${activityId}`, 'DELETE');
 };
+
+// api.js - Adicionar a função de edição
+export const updateActivity = async (activityId, activityData) => {
+  return fetchAPI(`/api/activities/${activityId}`, 'PUT', activityData);
+};

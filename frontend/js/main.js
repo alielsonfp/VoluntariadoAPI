@@ -5,8 +5,11 @@ import {
   leaveActivity,
   createActivity,
   deleteActivity,
+  updateActivity,
 } from './api.js';
 import { getCurrentUserEmail } from './auth.js';
+
+let currentActivityId = null; // Armazena o ID da atividade sendo editada
 
 // Função para carregar as atividades
 const loadActivities = async () => {
@@ -64,6 +67,74 @@ const displayActivities = async (activities) => {
   document.querySelectorAll('button.excluir').forEach((button) => {
     button.addEventListener('click', () => handleDelete(button.dataset.activityId));
   });
+
+  document.querySelectorAll('button.editar').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const activityId = button.dataset.activityId;
+      try {
+        const activities = await getActivities();
+        const activity = activities.find(a => a.id === activityId);
+
+        if (activity) {
+          openCreateActivityModal(activity); // Abre o modal com os dados da atividade
+        } else {
+          alert('Atividade não encontrada.');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar atividade:', error);
+        alert('Erro ao carregar atividade. Tente novamente mais tarde.');
+      }
+    });
+  });
+};
+
+// Função para abrir o modal de criação/edição de atividade
+const openCreateActivityModal = (activity = null) => {
+  const modal = document.getElementById('createActivityModal');
+  if (!modal) return;
+
+  // Preenche o modal com os dados da atividade (se for edição)
+  if (activity) {
+    document.getElementById('title').value = activity.title;
+    document.getElementById('description').value = activity.description;
+    document.getElementById('date').value = activity.date;
+    document.getElementById('location').value = activity.location;
+    document.getElementById('maxParticipants').value = activity.maxParticipants;
+    currentActivityId = activity.id; // Armazena o ID da atividade
+  } else {
+    // Limpa o modal para criação de nova atividade
+    document.getElementById('createActivityForm').reset();
+    currentActivityId = null;
+  }
+
+  modal.style.display = 'block';
+};
+
+// Função para fechar o modal de criação de atividade
+const closeCreateActivityModal = () => {
+  const modal = document.getElementById('createActivityModal');
+  if (modal) modal.style.display = 'none';
+};
+
+// Função para lidar com a criação/edição de atividade
+const handleCreateOrUpdateActivity = async (activityData) => {
+  try {
+    if (currentActivityId) {
+      // Se houver um ID, estamos editando
+      await updateActivity(currentActivityId, activityData);
+      alert('Atividade atualizada com sucesso!');
+    } else {
+      // Caso contrário, estamos criando
+      await createActivity(activityData);
+      alert('Atividade criada com sucesso!');
+    }
+
+    closeCreateActivityModal();
+    loadActivities(); // Recarrega as atividades
+  } catch (error) {
+    console.error('Erro ao salvar atividade:', error);
+    alert('Erro ao salvar atividade. Tente novamente mais tarde.');
+  }
 };
 
 // Função para lidar com a inscrição
@@ -108,31 +179,6 @@ const handleDelete = async (activityId) => {
   }
 };
 
-// Função para abrir o modal de criação de atividade
-const openCreateActivityModal = () => {
-  const modal = document.getElementById('createActivityModal');
-  if (modal) modal.style.display = 'block';
-};
-
-// Função para fechar o modal de criação de atividade
-const closeCreateActivityModal = () => {
-  const modal = document.getElementById('createActivityModal');
-  if (modal) modal.style.display = 'none';
-};
-
-// Função para criar uma nova atividade
-const handleCreateActivity = async (activityData) => {
-  try {
-    await createActivity(activityData);
-    alert('Atividade criada com sucesso!');
-    closeCreateActivityModal();
-    loadActivities();
-  } catch (error) {
-    console.error('Erro ao criar atividade:', error);
-    alert('Erro ao criar atividade. Tente novamente mais tarde.');
-  }
-};
-
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
   loadActivities();
@@ -141,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (criarAtividadeButton) {
     criarAtividadeButton.addEventListener('click', (e) => {
       e.preventDefault();
-      openCreateActivityModal();
+      openCreateActivityModal(); // Abre o modal para criação
     });
   }
 
@@ -158,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maxParticipants: parseInt(document.getElementById('maxParticipants').value),
       };
 
-      await handleCreateActivity(activityData);
+      await handleCreateOrUpdateActivity(activityData);
     });
   }
 
