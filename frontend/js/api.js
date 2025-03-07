@@ -1,6 +1,8 @@
+// api.js - Centraliza todas as chamadas à API
 const API_BASE_URL = 'http://localhost:3000';
 
-export async function fetchAPI(endpoint, method = 'GET', body = null) {
+// Função genérica para fazer requisições à API
+export const fetchAPI = async (endpoint, method = 'GET', body = null) => {
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -13,16 +15,51 @@ export async function fetchAPI(endpoint, method = 'GET', body = null) {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errorText = await response.text();
+    throw new Error(`Erro na requisição: ${response.status} - ${errorText}`);
   }
 
   return response.json();
-}
+};
 
-export async function register(email, password, name) {
+// Autenticação
+export const register = async (email, password, name) => {
   return fetchAPI('/api/auth/register', 'POST', { email, password, name });
-}
+};
 
-export async function login(email, password) {
+export const login = async (email, password) => {
   return fetchAPI('/api/auth/login', 'POST', { email, password });
-}
+};
+
+export const logout = async () => {
+  return fetchAPI('/api/auth/logout', 'POST');
+};
+
+export const checkAuth = async () => {
+  return fetchAPI('/api/auth/check', 'GET');
+};
+
+export const getCurrentUser = async () => {
+  return fetchAPI('/api/auth/me', 'GET');
+};
+
+// Atividades
+export const getActivities = async () => {
+  return fetchAPI('/api/activities', 'GET');
+};
+
+export const joinActivity = async (activityId, userEmail) => {
+  return fetchAPI(`/api/activities/${activityId}/join`, 'POST', { userEmail });
+};
+
+export const leaveActivity = async (activityId, userEmail) => {
+  return fetchAPI(`/api/activities/${activityId}/leave`, 'POST', { userEmail });
+};
+
+export const createActivity = async (activityData) => {
+  return fetchAPI('/api/activities', 'POST', activityData);
+};
+
+export const deleteActivity = async (activityId) => {
+  return fetchAPI(`/api/activities/${activityId}`, 'DELETE');
+};

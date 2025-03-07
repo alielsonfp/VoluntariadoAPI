@@ -1,65 +1,34 @@
-// Função para carregar as atividades do backend
+// main.js - Lógica da interface e manipulação do DOM
+import {
+  getActivities,
+  joinActivity,
+  leaveActivity,
+  createActivity,
+  deleteActivity,
+} from './api.js';
+import { getCurrentUserEmail } from './auth.js';
+
+// Função para carregar as atividades
 const loadActivities = async () => {
   try {
-    console.log('Carregando atividades...'); // Log de depuração
-
-    const response = await fetch('/api/activities', {
-      method: 'GET',
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erro ao carregar atividades:', errorText);
-      throw new Error(`Erro ao carregar atividades: ${response.status} - ${errorText}`);
-    }
-
-    const activities = await response.json();
-    console.log('Atividades carregadas:', activities); // Log de depuração
-
-    displayActivities(activities); // Exibe as atividades na tela
+    const activities = await getActivities();
+    displayActivities(activities);
   } catch (error) {
     console.error('Erro ao carregar atividades:', error);
     alert('Erro ao carregar atividades. Tente novamente mais tarde.');
   }
 };
 
-// Função para obter o email do usuário logado
-const getCurrentUserEmail = async () => {
-  try {
-    const response = await fetch('/api/auth/me', {
-      method: 'GET',
-      credentials: 'include', // Inclui cookies na requisição
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao obter informações do usuário');
-    }
-
-    const userData = await response.json();
-    return userData.email; // Retorna o email do usuário
-  } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao obter informações do usuário. Faça login novamente.');
-    window.location.href = '/login.html'; // Redireciona para a página de login
-    return null;
-  }
-};
-
-// Função para exibir as atividades na seção "Todas as Atividades"
+// Função para exibir as atividades na tela
 const displayActivities = async (activities) => {
   const todasAtividadesSection = document.getElementById('todas-atividades');
   todasAtividadesSection.innerHTML = '<h2>Todas as Atividades</h2>';
 
-  // Obtém o email do usuário logado
   const userEmail = await getCurrentUserEmail();
-  if (!userEmail) {
-    return; // Se não houver email, interrompe a execução
-  }
+  if (!userEmail) return;
 
-  // Cria uma string HTML para todas as atividades
   const atividadesHTML = activities.map((activity) => {
-    const isUserInscrito = activity.participants.includes(userEmail); // Verifica se o usuário está inscrito
+    const isUserInscrito = activity.participants.includes(userEmail);
 
     return `
       <div class="atividade">
@@ -79,191 +48,108 @@ const displayActivities = async (activities) => {
         </div>
       </div>
     `;
-  }).join(''); // Junta todas as strings em uma única string HTML
+  }).join('');
 
-  // Adiciona as atividades ao HTML
   todasAtividadesSection.innerHTML += atividadesHTML;
 
-  // Adiciona os event listeners aos botões de inscrição/desinscrição
-  const inscreverButtons = todasAtividadesSection.querySelectorAll('button.inscrever');
-  const desinscreverButtons = todasAtividadesSection.querySelectorAll('button.desinscrever');
-
-  inscreverButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const activityId = button.getAttribute('data-activity-id'); // Recupera o ID da atividade
-      handleSubscribe(activityId); // Passa o ID da atividade correspondente
-    });
+  // Adiciona eventos aos botões
+  document.querySelectorAll('button.inscrever').forEach((button) => {
+    button.addEventListener('click', () => handleSubscribe(button.dataset.activityId));
   });
 
-  desinscreverButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const activityId = button.getAttribute('data-activity-id'); // Recupera o ID da atividade
-      handleLeave(activityId); // Passa o ID da atividade correspondente
-    });
+  document.querySelectorAll('button.desinscrever').forEach((button) => {
+    button.addEventListener('click', () => handleLeave(button.dataset.activityId));
   });
 
-  // Adiciona os event listeners aos botões de edição
-  const editarButtons = todasAtividadesSection.querySelectorAll('button.editar');
-  editarButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const activityId = button.getAttribute('data-activity-id'); // Recupera o ID da atividade
-      alert('Editar atividade: ' + activityId); // Placeholder para a funcionalidade de editar
-    });
-  });
-
-  // Adiciona os event listeners aos botões de exclusão
-  const excluirButtons = todasAtividadesSection.querySelectorAll('button.excluir');
-  excluirButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const activityId = button.getAttribute('data-activity-id'); // Recupera o ID da atividade
-      handleDelete(activityId); // Chama a função de exclusão
-    });
+  document.querySelectorAll('button.excluir').forEach((button) => {
+    button.addEventListener('click', () => handleDelete(button.dataset.activityId));
   });
 };
 
-// Função para lidar com a inscrição em uma atividade
+// Função para lidar com a inscrição
 const handleSubscribe = async (activityId) => {
   try {
     const userEmail = await getCurrentUserEmail();
-    if (!userEmail) {
-      return;
-    }
+    if (!userEmail) return;
 
-    const response = await fetch(`/api/activities/${activityId}/join`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userEmail }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao se inscrever na atividade');
-    }
-
+    await joinActivity(activityId, userEmail);
     alert('Inscrição realizada com sucesso!');
-    loadActivities(); // Recarrega as atividades após a inscrição
+    loadActivities();
   } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao se inscrever na atividade. Tente novamente mais tarde.');
+    console.error('Erro ao se inscrever:', error);
+    alert('Erro ao se inscrever. Tente novamente mais tarde.');
   }
 };
 
-// Função para lidar com a desinscrição de uma atividade
+// Função para lidar com a desinscrição
 const handleLeave = async (activityId) => {
   try {
     const userEmail = await getCurrentUserEmail();
-    if (!userEmail) {
-      return;
-    }
+    if (!userEmail) return;
 
-    const response = await fetch(`/api/activities/${activityId}/leave`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userEmail }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao se desinscrever da atividade');
-    }
-
+    await leaveActivity(activityId, userEmail);
     alert('Desinscrição realizada com sucesso!');
-    loadActivities(); // Recarrega as atividades após a desinscrição
+    loadActivities();
   } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao se desinscrever da atividade. Tente novamente mais tarde.');
+    console.error('Erro ao se desinscrever:', error);
+    alert('Erro ao se desinscrever. Tente novamente mais tarde.');
   }
 };
 
-// Função para lidar com a exclusão de uma atividade
+// Função para lidar com a exclusão
 const handleDelete = async (activityId) => {
   try {
-    console.log(`Tentando excluir a atividade ID: ${activityId}`); // Log de depuração
-
-    const response = await fetch(`/api/activities/${activityId}`, {
-      method: 'DELETE',
-      credentials: 'include', // Inclui cookies na requisição
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erro na resposta:', errorText);
-      throw new Error(`Erro ao excluir atividade: ${response.status} - ${errorText}`);
-    }
-
+    await deleteActivity(activityId);
     alert('Atividade excluída com sucesso!');
-    loadActivities(); // Recarrega as atividades após a exclusão
+    loadActivities();
   } catch (error) {
     console.error('Erro ao excluir atividade:', error);
     alert('Erro ao excluir atividade. Tente novamente mais tarde.');
   }
 };
 
-// Função para abrir o modal
+// Função para abrir o modal de criação de atividade
 const openCreateActivityModal = () => {
   const modal = document.getElementById('createActivityModal');
-  if (modal) {
-    modal.style.display = 'block';
-  } else {
-    console.error('Modal não encontrado.');
-  }
+  if (modal) modal.style.display = 'block';
 };
 
-// Função para fechar o modal
+// Função para fechar o modal de criação de atividade
 const closeCreateActivityModal = () => {
   const modal = document.getElementById('createActivityModal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
+  if (modal) modal.style.display = 'none';
 };
 
 // Função para criar uma nova atividade
-const createActivity = async (activityData) => {
+const handleCreateActivity = async (activityData) => {
   try {
-    const response = await fetch('/api/activities', {
-      method: 'POST',
-      credentials: 'include', // Inclui cookies na requisição
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(activityData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao criar atividade');
-    }
-
-    const newActivity = await response.json();
+    await createActivity(activityData);
     alert('Atividade criada com sucesso!');
-    closeCreateActivityModal(); // Fecha o modal após a criação
-    loadActivities(); // Recarrega as atividades para exibir a nova atividade
+    closeCreateActivityModal();
+    loadActivities();
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Erro ao criar atividade:', error);
     alert('Erro ao criar atividade. Tente novamente mais tarde.');
   }
 };
 
-// Adicionar event listener para o botão "Criar Atividade"
+// Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+  loadActivities();
+
   const criarAtividadeButton = document.getElementById('criar-atividade');
   if (criarAtividadeButton) {
     criarAtividadeButton.addEventListener('click', (e) => {
-      e.preventDefault(); // Evita o comportamento padrão do link
-      openCreateActivityModal(); // Abre o modal
+      e.preventDefault();
+      openCreateActivityModal();
     });
   }
 
-  // Adicionar event listener para o formulário de criação de atividade
   const createActivityForm = document.getElementById('createActivityForm');
   if (createActivityForm) {
     createActivityForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Evita o envio padrão do formulário
+      e.preventDefault();
 
-      // Coletar os dados do formulário
       const activityData = {
         title: document.getElementById('title').value,
         description: document.getElementById('description').value,
@@ -272,25 +158,17 @@ document.addEventListener('DOMContentLoaded', () => {
         maxParticipants: parseInt(document.getElementById('maxParticipants').value),
       };
 
-      // Criar a atividade
-      await createActivity(activityData);
+      await handleCreateActivity(activityData);
     });
   }
 
-  // Adicionar event listener para o botão de fechar o modal
   const closeModalButton = document.querySelector('.close-modal');
   if (closeModalButton) {
     closeModalButton.addEventListener('click', closeCreateActivityModal);
   }
 
-  // Fechar modal ao clicar fora do conteúdo do modal
   window.addEventListener('click', (e) => {
     const modal = document.getElementById('createActivityModal');
-    if (e.target === modal) {
-      closeCreateActivityModal();
-    }
+    if (e.target === modal) closeCreateActivityModal();
   });
-
-  // Carrega as atividades ao carregar a página
-  loadActivities();
 });
