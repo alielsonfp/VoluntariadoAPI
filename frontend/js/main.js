@@ -9,7 +9,28 @@ import {
 } from './api.js';
 import { getCurrentUserEmail } from './auth.js';
 
+
+
 let currentActivityId = null; // Armazena o ID da atividade sendo editada
+
+// Função para verificar se a data do evento é igual à data atual
+const isEventDateToday = (eventDateStr) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Define a hora de hoje para 00:00:00
+
+  // Parseia a data do evento manualmente para evitar problemas de fuso horário
+  const [year, month, day] = eventDateStr.split('-').map(Number);
+  const eventDate = new Date(year, month - 1, day); // Mês é baseado em zero (janeiro = 0)
+  eventDate.setHours(0, 0, 0, 0); // Define a hora do evento para 00:00:00
+
+  // Logs para depuração
+  console.log('Data de hoje:', today.toISOString());
+  console.log('Data do evento:', eventDate.toISOString());
+  console.log('São iguais?', today.getTime() === eventDate.getTime());
+
+  return today.getTime() === eventDate.getTime();
+};
+
 
 // Função para carregar as atividades
 const loadActivities = async () => {
@@ -47,6 +68,8 @@ const displayActivitiesInSection = (activities, sectionId, userEmail, isUserActi
 
   const atividadesHTML = activities.map((activity) => {
     const isUserInscrito = activity.participants.includes(userEmail);
+    const isEventToday = isEventDateToday(activity.date); // Verifica se a data do evento é hoje
+    const isEventFull = activity.participants.length >= activity.maxParticipants;
 
     return `
       <div class="atividade">
@@ -57,7 +80,7 @@ const displayActivitiesInSection = (activities, sectionId, userEmail, isUserActi
         <p>Participantes: <span class="participantes">${activity.participants.length}/${activity.maxParticipants}</span></p>
         <button class="${isUserInscrito ? 'desinscrever' : 'inscrever'}" 
                 data-activity-id="${activity.id}" 
-                ${activity.participants.length >= activity.maxParticipants && !isUserInscrito ? 'disabled' : ''}>
+                ${(isEventFull && !isUserInscrito) || isEventToday ? 'disabled' : ''}>
           ${isUserInscrito ? 'Desinscrever-se' : 'Inscrever-se'}
         </button>
         <div class="atividade-actions">
