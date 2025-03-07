@@ -189,3 +189,38 @@ export const listActivityParticipants = async (req: Request, res: Response): Pro
     res.status(500).json({ message: 'Erro ao listar participantes.' });
   }
 };
+
+
+// Desinscrever um usuário de uma atividade
+export const leaveActivity = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { userEmail } = req.body; // Recebe o email do usuário
+
+  try {
+    // Buscar a atividade pelo ID
+    const activity = await Activity.findById(id);
+
+    if (!activity) {
+      res.status(404).json({ message: 'Atividade não encontrada.' });
+      return;
+    }
+
+    // Verificar se o usuário está inscrito
+    if (!activity.participants.includes(userEmail)) {
+      res.status(400).json({ message: 'Usuário não está inscrito nesta atividade.' });
+      return;
+    }
+
+    // Remover o usuário da lista de participantes
+    activity.participants = activity.participants.filter((email) => email !== userEmail);
+
+    // Salvar as alterações no banco de dados
+    await Activity.update(activity);
+
+    // Retornar uma mensagem de sucesso
+    res.status(200).json({ message: 'Desinscrição realizada com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao desinscrever usuário da atividade:', error);
+    res.status(500).json({ message: 'Erro ao desinscrever usuário da atividade.' });
+  }
+};

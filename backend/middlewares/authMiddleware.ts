@@ -7,7 +7,6 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // Obtém o token do cookie ou do cabeçalho Authorization
   const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
 
-  console.log('🔍 Token recebido:', token); // Log para depuração
 
   if (!token) {
     res.status(401).json({ message: 'Acesso negado. Token não fornecido.' });

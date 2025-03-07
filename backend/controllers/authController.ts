@@ -65,7 +65,19 @@ const authController = {
         res.status(401).json({ message: 'Usuário não autenticado' });
         return;
       }
-      res.status(200).json({ email: userEmail });
+
+      // Busca o usuário no banco de dados (ou onde as informações estiverem armazenadas)
+      const user = await User.findByEmail(userEmail); // Supondo que você tenha um método para buscar o usuário pelo email
+      if (!user) {
+        res.status(404).json({ message: 'Usuário não encontrado' });
+        return;
+      }
+
+      // Retorna o email e a role do usuário
+      res.status(200).json({
+        email: user.email,
+        role: user.role, // Certifique-se de que a role está sendo retornada
+      });
     } catch (error) {
       console.error('Erro ao obter informações do usuário:', error);
       res.status(500).json({ message: 'Erro interno do servidor' });
