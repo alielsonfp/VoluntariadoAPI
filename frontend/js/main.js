@@ -15,20 +15,35 @@ let currentActivityId = null; // Armazena o ID da atividade sendo editada
 const loadActivities = async () => {
   try {
     const activities = await getActivities();
-    displayActivities(activities);
+    const userEmail = await getCurrentUserEmail();
+
+    if (!userEmail) return;
+
+    // Filtra as atividades em que o usuário está inscrito
+    const userActivities = activities.filter(activity => activity.participants.includes(userEmail));
+
+    // Exibe todas as atividades
+    displayActivitiesInSection(activities, 'todas-atividades', userEmail);
+
+    // Exibe as atividades do usuário
+    displayActivitiesInSection(userActivities, 'minhas-atividades', userEmail, true);
   } catch (error) {
     console.error('Erro ao carregar atividades:', error);
     alert('Erro ao carregar atividades. Tente novamente mais tarde.');
   }
 };
 
-// Função para exibir as atividades na tela
-const displayActivities = async (activities) => {
-  const todasAtividadesSection = document.getElementById('todas-atividades');
-  todasAtividadesSection.innerHTML = '<h2>Todas as Atividades</h2>';
+// Função para exibir as atividades em uma seção específica
+const displayActivitiesInSection = (activities, sectionId, userEmail, isUserActivities = false) => {
+  const section = document.getElementById(sectionId);
+  if (!section) return;
 
-  const userEmail = await getCurrentUserEmail();
-  if (!userEmail) return;
+  section.innerHTML = `<h2>${isUserActivities ? 'Minhas Atividades' : 'Todas as Atividades'}</h2>`;
+
+  if (activities.length === 0) {
+    section.innerHTML += '<p>Nenhuma atividade encontrada.</p>';
+    return;
+  }
 
   const atividadesHTML = activities.map((activity) => {
     const isUserInscrito = activity.participants.includes(userEmail);
@@ -53,22 +68,22 @@ const displayActivities = async (activities) => {
     `;
   }).join('');
 
-  todasAtividadesSection.innerHTML += atividadesHTML;
+  section.innerHTML += atividadesHTML;
 
   // Adiciona eventos aos botões
-  document.querySelectorAll('button.inscrever').forEach((button) => {
+  section.querySelectorAll('button.inscrever').forEach((button) => {
     button.addEventListener('click', () => handleSubscribe(button.dataset.activityId));
   });
 
-  document.querySelectorAll('button.desinscrever').forEach((button) => {
+  section.querySelectorAll('button.desinscrever').forEach((button) => {
     button.addEventListener('click', () => handleLeave(button.dataset.activityId));
   });
 
-  document.querySelectorAll('button.excluir').forEach((button) => {
+  section.querySelectorAll('button.excluir').forEach((button) => {
     button.addEventListener('click', () => handleDelete(button.dataset.activityId));
   });
 
-  document.querySelectorAll('button.editar').forEach((button) => {
+  section.querySelectorAll('button.editar').forEach((button) => {
     button.addEventListener('click', async () => {
       const activityId = button.dataset.activityId;
       try {
